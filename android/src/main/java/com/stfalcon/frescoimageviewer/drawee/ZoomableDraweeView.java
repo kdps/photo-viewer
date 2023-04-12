@@ -43,11 +43,6 @@ public class ZoomableDraweeView extends SimpleDraweeView implements IAttacher {
         init();
     }
 
-    @Override
-    public void setOrientation(int orientation) {
-
-    }
-    
     public ZoomableDraweeView(Context context) {
         super(context);
         init();
