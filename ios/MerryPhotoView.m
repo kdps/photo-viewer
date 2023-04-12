@@ -3,6 +3,7 @@
 #import <React/RCTImageLoader.h>
 #import <React/RCTAnimatedImage.h>
 #import <Foundation/Foundation.h>
+#import <SDWebImage/SDWebImage.h>
 
 @implementation MerryPhotoView {
 
@@ -160,38 +161,20 @@
     MerryPhoto* currentPhoto = [self.dataSource.photos objectAtIndex:current];
     MerryPhotoData* d = self.reactPhotos[current];
 
-    [[_bridge moduleForClass:[RCTImageLoader class]] loadImageWithURLRequest:d.source.request
-        size:d.source.size
-        scale:d.source.scale
-        clipped:YES
-        resizeMode:RCTResizeModeStretch
-        progressBlock:^(int64_t progress, int64_t total) {
-            //            NSLog(@"%lld %lld", progress, total);
+    [[SDWebImageManager sharedManager] 
+        loadImageWithURL:d.source.request.URL 
+        options:0 
+        progress: ^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
         }
-        partialLoadBlock:nil
-        completionBlock:^(NSError* error, UIImage* image) {
+        completed: ^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
             if (image) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    // https://github.com/merryjs/photo-viewer/issues/11
-                    // We convert RCTAnimatedImage to UIAnimatedImage so that UIImageView can display gif
-                    if ([image isKindOfClass:[RCTAnimatedImage class]]) {
-                        RCTAnimatedImage *animatedImage = (RCTAnimatedImage *)image;
-                        NSMutableArray *imageList = [@[] mutableCopy];
-                        NSTimeInterval duration = 0;
-                        for (int i = 0; i < [animatedImage animatedImageFrameCount]; i ++) {
-                            [imageList addObject:[animatedImage animatedImageFrameAtIndex:i]];
-                            duration += [animatedImage animatedImageDurationAtIndex:i];
-                        }
-                        currentPhoto.image = [UIImage animatedImageWithImages:imageList duration:duration];
-                    } else {
-                        currentPhoto.image = image;
-                    }
-
+                    currentPhoto.image = image;
                     [photosViewController updatePhoto:currentPhoto];
-
                 });
             }
-        }];
+        }
+    ];
 }
 
 #pragma mark - NYTPhotosViewControllerDelegate
