@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.source_files  = "ios/*.{h,m}"
   s.requires_arc = true
 
+  s.dependency 'SDWebImage'
   s.dependency "React"
   s.dependency "NYTPhotoViewer", '2.0.0'
 end
